@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">androidapptuturoal</string>
+    <string name="enter_sampling_rate_8000">Enter Sampling Rate (ex: 8000)</string>
+    <string name="enter_duration_3_seconds">Enter Duration (ex: 3 seconds)</string>
+</resources>
