@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+
+    <Button
+        android:id="@+id/startButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="84dp"
+        android:layout_marginLeft="84dp"
+        android:layout_marginTop="301dp"
+        android:layout_marginEnd="100dp"
+        android:layout_marginRight="100dp"
+        android:layout_marginBottom="44dp"
+        android:text="Start"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.561"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.007" />
+
+    <SeekBar
+        android:id="@+id/frequencyAdjuster"
+        style="@style/Widget.AppCompat.SeekBar.Discrete"
+        android:layout_width="242dp"
+        android:layout_height="33dp"
+        android:layout_marginBottom="33dp"
+        android:max="5"
+        android:progress="3"
+        app:layout_constraintBottom_toTopOf="@+id/startButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.496"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.238"
+        android:progressDrawable="@drawable/volume_seekbar"
+        android:thumbTint="@color/techGold"/>
+
+    <TextView
+        android:id="@+id/adjustFrequencyText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="150dp"
+        android:layout_marginLeft="150dp"
+        android:layout_marginEnd="620dp"
+        android:layout_marginRight="620dp"
+        android:background="@color/techNavy"
+        android:text="Adjust Frequency"
+        android:textColor="@android:color/background_light"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/frequencyAdjuster"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.046"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="243dp"
+        android:layout_height="17dp"
+        android:layout_marginTop="4dp"
+        android:background="@color/techNavy"
+        android:text="20 Hz   40 Hz   60 Hz   80 Hz  100 Hz  120 Hz"
+        android:textColor="@android:color/background_light"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/frequencyAdjuster" />
+
+    <com.jjoe64.graphview.helper.GraphViewXML
+        android:id="@+id/graphViewXML"
+        android:layout_width="match_parent"
+        android:layout_height="200dip"
+        android:title="Graph Title"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:seriesColor="#00cc00"
+        app:seriesData="0=5;2=5;3=0;4=2"
+        app:seriesTitle="Foobar"
+        app:seriesType="line" />
+
+    <com.jjoe64.graphview.helper.GraphViewXML
+        android:layout_width="match_parent"
+        android:layout_height="200dip"
+        android:layout_marginBottom="14dp"
+        android:title="Graph Title"
+        app:layout_constraintBottom_toTopOf="@+id/graphViewXML"
+        app:layout_constraintStart_toStartOf="parent"
+        app:seriesColor="#00cc00"
+        app:seriesData="0=5;2=5;3=0;4=2"
+        app:seriesTitle="Foobar"
+        app:seriesType="line" />
+
+    <EditText
+        android:id="@+id/sampling_rate_val"
+        android:layout_width="263dp"
+        android:layout_height="63dp"
+        android:layout_marginTop="32dp"
+        android:autofillHints=""
+        android:background="@color/techGold"
+        android:ems="10"
+        android:hint="@string/enter_sampling_rate_8000"
+        android:inputType="number"
+        android:textColor="@android:color/background_light"
+        android:textColorHint="@android:color/background_light"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView2" />
+
+    <EditText
+        android:id="@+id/duration_val"
+        android:layout_width="267dp"
+        android:layout_height="55dp"
+        android:layout_marginStart="40dp"
+        android:layout_marginLeft="40dp"
+        android:layout_marginTop="16dp"
+        android:autofillHints=""
+        android:background="@color/techNavy"
+        android:ems="10"
+        android:hint="@string/enter_duration_3_seconds"
+        android:inputType="number"
+        android:textColorHint="@android:color/background_light"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.267"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/sampling_rate_val" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
