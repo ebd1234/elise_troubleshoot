@@ -8,7 +8,6 @@ import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -16,7 +15,6 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
@@ -314,45 +312,86 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public double[] getArray (double stop, double step)
+    {
+        int samples = (int) Math.ceil(stop/step);
+        double[] result = new double[samples];
+        double val = 0.0;
+
+        for(int i=0;i<samples;i++) {
+            result[i] = val;
+            val = val + step;
+        }
+
+        return result;
+    }
+
     private void graphFunction(int frequency_1, int frequency_2){
-        final int freq1 = frequency_1;
-        final int freq2 = frequency_2;
+
         final double sampleRate;
         if(inputSampleRate.getText().toString().matches(""))
         {
-            sampleRate = 44000.0;
-        }else {
+            sampleRate = 96000.0;
+        }
+        else {
             sampleRate = Double.parseDouble(inputSampleRate.getText().toString());
         }
 
+        final int freq1 = frequency_1;
+        final int freq2 = frequency_2;
+        final double xMax = 1.0/freq1;
+        final double step = 1.0/sampleRate;
 
+        int samples = (int) Math.ceil(xMax/step);
+
+        double[] x = getArray(xMax, step);
+        double[] y = new double[samples];
+
+        GraphView graph = (GraphView) findViewById(R.id.graph);
+        graph.removeAllSeries();
+
+        series = new LineGraphSeries<DataPoint>();
+
+        for (int i = 0; i < x.length; i++) {
+            y[i] = Math.sin(2 * Math.PI * freq1 * x[i]);
+
+            series.appendData(new DataPoint(x[i], y[i]), true, x.length);
+        }
+        graph.addSeries(series);
+
+        graph.getViewport().setMaxX(xMax);
+        graph.getViewport().setMinX(0);
+        graph.getViewport().setMinY(-1);
+        graph.getViewport().setMaxY(1);
+
+        graph.getViewport().setYAxisBoundsManual(true);
+        graph.getViewport().setXAxisBoundsManual(true);
+
+        /*
         if (radioButton1.isChecked()) {
-            double y,x;
-            x = 0;
-            double inc = .05;
-            int samples = 2000;
+                double y,x;
+                x = 0;
+                //double xMax = 1.0/freq1;
+                double xMax = .001;
 
-            GraphView graph = (GraphView) findViewById(R.id.graph);
-            graph.removeAllSeries();
+                double inc = 1.0/sampleRate;
+                int samples = (int) (xMax/inc);
 
-            series = new LineGraphSeries<DataPoint>();
+                GraphView graph = (GraphView) findViewById(R.id.graph);
+                graph.removeAllSeries();
 
-            for (int i = 0; i < samples; i++){
-                x = x + inc;
-                y = Math.sin(2 * Math.PI * i / (sampleRate/freq1));
-                series.appendData(new DataPoint(x, y), true, samples);
-            }
+                series = new LineGraphSeries<DataPoint>();
+
+                for (int j = 0; j < samples; j++){
+                    x = x + inc;
+                    //y = Math.sin(2 * Math.PI * i / (sampleRate/freq1));
+                    y = Math.sin(2 * Math.PI * freq1 * x);
+                    series.appendData(new DataPoint(x, y), true, samples);
+                }
+
             graph.addSeries(series);
 
-            if (freq1 < 2000){
-                graph.getViewport().setMaxX(100);
-            }
-            else if (freq1 < 10000) {
-                graph.getViewport().setMaxX(25);
-            }
-            else {
-                graph.getViewport().setMaxX(10);
-            }
+            graph.getViewport().setMaxX(xMax);
             graph.getViewport().setMinX(0);
             graph.getViewport().setMinY(-1);
             graph.getViewport().setMaxY(1);
@@ -366,8 +405,9 @@ public class MainActivity extends AppCompatActivity {
             double instfreq=0, numerator;
             double y,x;
             x = 0;
-            double inc = .1;
-            int samples = 2000;
+            double xMax = 0.01;
+            double inc = 1.0/sampleRate;
+            int samples = (int) (xMax/inc);
 
             GraphView graph = (GraphView) findViewById(R.id.graph);
             graph.removeAllSeries();
@@ -378,22 +418,22 @@ public class MainActivity extends AppCompatActivity {
 
                 numerator=(double)(i)/sampleRate;
                 instfreq =freq1+(numerator*(freq2-freq1));
-                y=Math.sin(2*Math.PI*i/(sampleRate/instfreq));
+                //y=Math.sin(2*Math.PI*i/(sampleRate/instfreq));
+                y = Math.sin(2 * Math.PI * instfreq * x);
 
                 series.appendData(new DataPoint(x, y), true, samples);
             }
             graph.addSeries(series);
-
             if (freq1 < 3000){
-                graph.getViewport().setMaxX(100);
+                graph.getViewport().setMaxX(.1);
             }
             else if (freq1 < 10000) {
-                graph.getViewport().setMaxX(50);
+                graph.getViewport().setMaxX(.1);
             }
             else {
-                graph.getViewport().setMaxX(35);
+                graph.getViewport().setMaxX(.1);
             }
-
+            graph.getViewport().setMaxX(xMax);
             graph.getViewport().setMinX(0);
             graph.getViewport().setMinY(-1);
             graph.getViewport().setMaxY(1);
@@ -401,6 +441,7 @@ public class MainActivity extends AppCompatActivity {
             graph.getViewport().setYAxisBoundsManual(true);
             graph.getViewport().setXAxisBoundsManual(true);
         }
+        */
     }
 
     public void checkButton(View v) {
