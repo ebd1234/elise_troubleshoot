@@ -65,6 +65,9 @@ public class GalleryFragment extends Fragment {
 
     Boolean waveform = true;
 
+    GraphView graphId;
+    LineGraphSeries<DataPoint> series;
+
 
     //stuff for requesting permissions
     private static final String LOG_TAG = "donor.ui.gallery";
@@ -171,7 +174,7 @@ public class GalleryFragment extends Fragment {
         frequency2_seekbar = (SeekBar) root.findViewById(R.id.frequency2_seekbar);
         frequency2_display = (TextView) root.findViewById(R.id.frequency2_display);
 
-        GraphView graphId = (GraphView) root.findViewById(R.id.graph);
+        graphId = (GraphView) root.findViewById(R.id.graph);
 
         graphFunction(seekbar1_val, seekbar2_val);
 
