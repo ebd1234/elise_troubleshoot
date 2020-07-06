@@ -51,6 +51,7 @@ public class GalleryFragment extends Fragment {
 
     Boolean waveform = true;
 
+    GraphView graphId;
     LineGraphSeries<DataPoint> series;
 
     public void onCreate(Bundle savedInstanceState) {
@@ -75,7 +76,9 @@ public class GalleryFragment extends Fragment {
         frequency2_seekbar = (SeekBar) root.findViewById(R.id.frequency2_seekbar);
         frequency2_display = (TextView) root.findViewById(R.id.frequency2_display);
 
-        //graphFunction(seekbar1_val, seekbar2_val);
+        graphId = (GraphView) root.findViewById(R.id.graph);
+
+        graphFunction(seekbar1_val, seekbar2_val);
 
         //frequency 1 updater
         frequency1_display.setText("Enter Frequency One: " + frequency1_seekbar.getProgress() + " Hz");
@@ -84,7 +87,7 @@ public class GalleryFragment extends Fragment {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 seekbar1_val = progress;
                 frequency1_display.setText("Enter Frequency One: " + seekbar1_val + " Hz");
-                //graphFunction(seekbar1_val, seekbar2_val);
+                graphFunction(seekbar1_val, seekbar2_val);
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
@@ -92,7 +95,7 @@ public class GalleryFragment extends Fragment {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 frequency1_display.setText("Enter Frequency One: " + seekbar1_val + " Hz");
-                //graphFunction(seekbar1_val, seekbar2_val);
+                graphFunction(seekbar1_val, seekbar2_val);
             }
         });
 
@@ -103,7 +106,7 @@ public class GalleryFragment extends Fragment {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 seekbar2_val = progress;
                 frequency2_display.setText("Enter Frequency Two: " + seekbar2_val + " Hz");
-                //graphFunction(seekbar1_val, seekbar2_val);
+                graphFunction(seekbar1_val, seekbar2_val);
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
@@ -111,7 +114,7 @@ public class GalleryFragment extends Fragment {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 frequency2_display.setText("Enter Frequency Two: " + seekbar2_val + " Hz");
-                //graphFunction(seekbar1_val, seekbar2_val);
+                graphFunction(seekbar1_val, seekbar2_val);
             }
         });
 
@@ -138,6 +141,7 @@ public class GalleryFragment extends Fragment {
                 frequency2_seekbar.setVisibility(View.INVISIBLE);
                 frequency2_display.setVisibility(View.INVISIBLE);
                 waveform = true;
+                graphFunction(seekbar1_val, seekbar2_val);
             }
         });
 
@@ -147,6 +151,7 @@ public class GalleryFragment extends Fragment {
                 frequency2_seekbar.setVisibility(View.VISIBLE);
                 frequency2_display.setVisibility(View.VISIBLE);
                 waveform = false;
+                graphFunction(seekbar1_val, seekbar2_val);
             }
         });
 
@@ -335,5 +340,88 @@ public class GalleryFragment extends Fragment {
         });
         thread.start();
 
+    }
+
+    private void graphFunction(int frequency_1, int frequency_2){
+        final int freq1 = frequency_1;
+        final int freq2 = frequency_2;
+        final double sampleRate;
+        if(inputSampleRate.getText().toString().matches(""))
+        {
+            sampleRate = 44000.0;
+        }else {
+            sampleRate = Double.parseDouble(inputSampleRate.getText().toString());
+        }
+
+        if (waveform) {
+            double y,x;
+            x = 0;
+            double xMax= 1.0/freq1;
+
+            double inc = 1/sampleRate;
+            int samples = (int) (5.0/inc);
+
+            GraphView graph = (GraphView) graphId;
+            graph.removeAllSeries();
+
+            series = new LineGraphSeries<DataPoint>();
+
+            for (int i = 0; i < samples; i++){
+                x = x + inc;
+                y = Math.sin(2 * Math.PI * i / (sampleRate/freq1));
+                series.appendData(new DataPoint(x, y), true, samples);
+            }
+
+            graph.addSeries(series);
+
+            graph.getViewport().setMaxX(xMax);
+            graph.getViewport().setMinX(0);
+            graph.getViewport().setMinY(-1);
+            graph.getViewport().setMaxY(1);
+
+            graph.getViewport().setYAxisBoundsManual(true);
+            graph.getViewport().setXAxisBoundsManual(true);
+
+        }
+
+        else {
+            double instfreq=0, numerator;
+            double y,x;
+            x = 0;
+            double inc = .1;
+            int samples = 2000;
+
+            GraphView graph = (GraphView) graphId;
+            graph.removeAllSeries();
+
+            series = new LineGraphSeries<DataPoint>();
+            for (int i = 0; i < samples; i++){
+                x = x + inc;
+
+                numerator=(double)(i)/sampleRate;
+                instfreq =freq1+(numerator*(freq2-freq1));
+                y=Math.sin(2*Math.PI*i/(sampleRate/instfreq));
+
+                series.appendData(new DataPoint(x, y), true, samples);
+            }
+            graph.addSeries(series);
+
+            if (freq1 < 3000){
+                graph.getViewport().setMaxX(100);
+            }
+            else if (freq1 < 10000) {
+                graph.getViewport().setMaxX(50);
+            }
+            else {
+                graph.getViewport().setMaxX(35);
+            }
+
+            graph.getViewport().setMinX(0);
+            graph.getViewport().setMinY(-1);
+            graph.getViewport().setMaxY(1);
+
+            graph.getViewport().setYAxisBoundsManual(true);
+            graph.getViewport().setXAxisBoundsManual(true);
+        }
     }
 }
