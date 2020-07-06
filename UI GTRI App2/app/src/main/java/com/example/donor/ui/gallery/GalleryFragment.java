@@ -1,9 +1,13 @@
 package com.example.donor.ui.gallery;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
+import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -16,8 +20,12 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
@@ -26,6 +34,12 @@ import com.example.donor.R;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 
 public class GalleryFragment extends Fragment {
@@ -51,13 +65,95 @@ public class GalleryFragment extends Fragment {
 
     Boolean waveform = true;
 
-    LineGraphSeries<DataPoint> series;
+    //stuff for requesting permissions
+    private static final String LOG_TAG = "donor.ui.gallery";
+    private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
+    private static String fileName = null;
+
+    //private RecordButton recordButton = null;
+    private MediaRecorder recorder = null;
+
+    // Requesting permission to RECORD_AUDIO and setting up recording information
+    private boolean permissionToRecordAccepted = false;
+    private String [] permissions = {Manifest.permission.RECORD_AUDIO};
+    public ArrayList<Integer> amplitudes = new ArrayList<Integer>(0);
+    public ArrayList<Double> time = new ArrayList<Double>(0);
+    public Timer timer;
+    public Helper task;
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode){
+            case REQUEST_RECORD_AUDIO_PERMISSION:
+                permissionToRecordAccepted  = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                break;
+        }
+        if (!permissionToRecordAccepted ) getActivity().finish();;
+
+    }
+
+    // Class to help keep track of recorded waves
+    class Helper extends TimerTask
+    {
+        public double seconds = 0;
+        public int i = 0;
+        public void run()
+        {
+            if(recorder != null) {
+                amplitudes.add(recorder.getMaxAmplitude());
+                time.add(seconds);
+                seconds += 0.1;
+                Log.d(LOG_TAG, Integer.toString(amplitudes.get(i)));
+                i += 1;
+            }
+        }
+    }
+    private void startRecording() {
+        recorder = new MediaRecorder();
+        recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+        recorder.setOutputFile(fileName);
+        recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+
+        try {
+            recorder.prepare();
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "prepare() failed");
+        }
+
+        recorder.start();
+        timer = new Timer();
+        task = new Helper();
+        timer.schedule(task, 1, 100);
+
+        Toast.makeText(getActivity(), "Recording", Toast.LENGTH_SHORT).show();
+    }
+    private void stopRecording() {
+        try {
+            Thread.sleep(duration_var * num_pulses_var);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        timer.cancel();
+        task.cancel();
+        timer.purge();
+        recorder.stop();
+        recorder.release();
+        recorder = null;
+
+    }
+
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //requestPermissions(permissions, REQUEST_RECORD_AUDIO_PERMISSION);
     }
 
     public View onCreateView(@SuppressLint("SetTextI18n") LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        //getting permission to record
+        fileName = getActivity().getExternalCacheDir().getAbsolutePath();
+        fileName += "/audiorecordtest.3gp";
+        ActivityCompat.requestPermissions(getActivity(), permissions, REQUEST_RECORD_AUDIO_PERMISSION);
         View root = inflater.inflate(R.layout.fragment_gallery, container, false);
 
         //initialize fields
@@ -154,7 +250,7 @@ public class GalleryFragment extends Fragment {
     }
 
     private void playSin(int seekbar1_val, int duration_variable, int sample_rate_variable, int interval_variable, int num_pulses_variable) {
-
+        startRecording();
         // variables
         final double freqOfTone = seekbar1_val; // ex 440 hz
         final double totalPulses = num_pulses_variable;
@@ -209,6 +305,7 @@ public class GalleryFragment extends Fragment {
             }
 
             void playSound () {
+                startRecording();
                 final int[] pulseVar = {0};
                 final AudioTrack audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC,
                         sampleRate, AudioFormat.CHANNEL_OUT_MONO,
@@ -242,10 +339,23 @@ public class GalleryFragment extends Fragment {
             }
         });
         thread.start();
+        //stoprecording thread
+        final Thread recording = new Thread(new Runnable() {
+            public void run() {
+                try {
+                    Thread.sleep(duration_var * num_pulses_var);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                stopRecording();
+                Log.d(LOG_TAG, "done");
+            }
+        });
+        recording.start();
     }
 
     private void playChirp(int seekbar1_val, int seekbar2_val, int duration_variable, int sample_rate_variable, int interval_variable, int num_pulses_variable) {
-
+        startRecording();
         // variables
         final double totalPulsesVar = num_pulses_variable;
         final double freq1=seekbar1_val;
@@ -330,10 +440,23 @@ public class GalleryFragment extends Fragment {
                         }
                     }
                 });
-
             }
+
         });
         thread.start();
+        //stoprecording thread
+        final Thread recording = new Thread(new Runnable() {
+            public void run() {
+                try {
+                    Thread.sleep(duration_var * num_pulses_var);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                stopRecording();
+                Log.d(LOG_TAG, "done");
+            }
+        });
+        recording.start();
 
     }
 }

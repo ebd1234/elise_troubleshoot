@@ -1,0 +1,4 @@
+#Mon Jul 06 10:17:59 EDT 2020
+base.0=/Users/morriswan/Documents/GitHub/SummerProject2020Public/Elise/UI GTRI App2/app/build/intermediates/dex/debug/mergeDexDebug/classes.dex
+path.0=classes.dex
+renamed.0=classes.dex
