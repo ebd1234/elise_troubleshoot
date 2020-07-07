@@ -45,6 +45,8 @@ public class MainActivity extends AppCompatActivity {
 
     LineGraphSeries<DataPoint> series;
 
+    Boolean waveform = true;
+
     @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -329,34 +331,65 @@ public class MainActivity extends AppCompatActivity {
     private void graphFunction(int frequency_1, int frequency_2){
 
         final double sampleRate;
-        if(inputSampleRate.getText().toString().matches(""))
-        {
+        if (inputSampleRate.getText().toString().matches("")) {
             sampleRate = 96000.0;
         }
         else {
             sampleRate = Double.parseDouble(inputSampleRate.getText().toString());
         }
 
+        final double duration;
+        if (inputSampleRate.getText().toString().matches("")) {
+            duration = 5;
+        }
+        else {
+            duration = Integer.parseInt(inputDuration.getText().toString());
+        }
+
         final int freq1 = frequency_1;
         final int freq2 = frequency_2;
-        final double xMax = 1.0/freq1;
-        final double step = 1.0/sampleRate;
 
-        int samples = (int) Math.ceil(xMax/step);
-
-        double[] x = getArray(xMax, step);
-        double[] y = new double[samples];
+        final double xMax;
+        final double step;
 
         GraphView graph = (GraphView) findViewById(R.id.graph);
         graph.removeAllSeries();
 
         series = new LineGraphSeries<DataPoint>();
 
-        for (int i = 0; i < x.length; i++) {
-            y[i] = Math.sin(2 * Math.PI * freq1 * x[i]);
+        if (waveform) {
+            xMax = 1.0/freq1;
+            step = 1.0/sampleRate;
 
-            series.appendData(new DataPoint(x[i], y[i]), true, x.length);
+            int samples = (int) Math.ceil(xMax/step);
+
+            double[] x = getArray(xMax, step);
+            double[] y = new double[samples];
+
+            for (int i = 0; i < x.length; i++) {
+                y[i] = Math.sin(2 * Math.PI * freq1 * x[i]);
+
+                series.appendData(new DataPoint(x[i], y[i]), true, x.length);
+            }
         }
+
+        else {
+            xMax = duration/1000.0;
+            step = 1.0/sampleRate;
+
+            int samples = (int) Math.ceil(xMax/step);
+
+            double[] x = getArray(xMax, step);
+            double[] y = new double[samples];
+
+            for (int i = 0; i < x.length; i++) {
+                //y[i] = Math.cos(Math.PI * ((freq2-freq1)/xMax) * x[i] * x[i]);
+                y[i] = Math.cos(Math.PI * ((freq2-freq1)/xMax) * x[i] * x[i] + (2 * freq1 * x[i]));
+
+                series.appendData(new DataPoint(x[i], y[i]), true, x.length);
+            }
+        }
+
         graph.addSeries(series);
 
         graph.getViewport().setMaxX(xMax);
@@ -366,6 +399,7 @@ public class MainActivity extends AppCompatActivity {
 
         graph.getViewport().setYAxisBoundsManual(true);
         graph.getViewport().setXAxisBoundsManual(true);
+
 
         /*
         if (radioButton1.isChecked()) {
@@ -448,11 +482,13 @@ public class MainActivity extends AppCompatActivity {
         if (radioButton1.isChecked()) {
             frequency2_seekbar.setVisibility(View.INVISIBLE);
             frequency2_display.setVisibility(View.INVISIBLE);
+            waveform = true;
             graphFunction(seekbar1_val, seekbar2_val);
         }
         else if (radioButton2.isChecked()) {
             frequency2_seekbar.setVisibility(View.VISIBLE);
             frequency2_display.setVisibility(View.VISIBLE);
+            waveform = false;
             graphFunction(seekbar1_val, seekbar2_val);
         }
     }
