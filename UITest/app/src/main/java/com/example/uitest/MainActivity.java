@@ -1,11 +1,15 @@
 package com.example.uitest;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
@@ -27,11 +31,9 @@ public class MainActivity extends AppCompatActivity {
     int seekbar1_val = 5000;
     int seekbar2_val = 10000;
 
-    RadioGroup radioGroup;
-    RadioButton radioButton1;
-    RadioButton radioButton2;
-
     Button emitButton;
+    Button sinButton;
+    Button chirpButton;
 
     EditText inputDuration;
     EditText inputSampleRate;
@@ -60,27 +62,28 @@ public class MainActivity extends AppCompatActivity {
         inputNumPulses = (EditText) findViewById(R.id.pulses_input);
 
         emitButton = (Button) findViewById(R.id.emitButton);
+        sinButton = (Button) findViewById(R.id.sin_button);
+        sinButton.setTypeface(null, Typeface.BOLD_ITALIC);
+        chirpButton = (Button) findViewById(R.id.chirp_button);
+        chirpButton.setTypeface(null, Typeface.NORMAL);
 
         frequency1_seekbar = (SeekBar) findViewById(R.id.frequency1_seekbar);
         frequency1_display = (TextView) findViewById(R.id.frequency1_display);
         frequency2_seekbar = (SeekBar) findViewById(R.id.frequency2_seekbar);
         frequency2_display = (TextView) findViewById(R.id.frequency2_display);
 
-        radioGroup = findViewById(R.id.radioGroup);
-        radioButton1 = (RadioButton) findViewById(R.id.radio_one);
-        radioButton2 = (RadioButton) findViewById(R.id.radio_two);
-
-
         graphFunction(seekbar1_val, seekbar2_val);
 
         //frequency 1 updater
         frequency1_display.setText("Enter Frequency One: " + frequency1_seekbar.getProgress() + " Hz");
         frequency1_seekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 seekbar1_val = progress;
                 frequency1_display.setText("Enter Frequency One: " + seekbar1_val + " Hz");
                 graphFunction(seekbar1_val, seekbar2_val);
+                //frequency2_seekbar.setMin(progress);
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
@@ -120,14 +123,51 @@ public class MainActivity extends AppCompatActivity {
                 interval_var = Integer.parseInt(inputInterval.getText().toString());
                 num_pulses_var = Integer.parseInt(inputNumPulses.getText().toString());
 
-                if (radioButton1.isChecked()) {
+                if (waveform) {
                     playSin(seekbar1_val, duration_var, sample_rate_var, interval_var, num_pulses_var);
                 }
-                else if (radioButton2.isChecked()) {
+                else {
                     playChirp(seekbar1_val, seekbar2_val, duration_var, sample_rate_var, interval_var, num_pulses_var);
                 }
             }
         });
+
+        sinButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                frequency2_seekbar.setVisibility(View.INVISIBLE);
+                frequency2_display.setVisibility(View.INVISIBLE);
+                waveform = true;
+                updateButton(waveform);
+                graphFunction(seekbar1_val, seekbar2_val);
+            }
+        });
+
+        chirpButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                frequency2_seekbar.setVisibility(View.VISIBLE);
+                frequency2_display.setVisibility(View.VISIBLE);
+                waveform = false;
+                updateButton(waveform);
+                graphFunction(seekbar1_val, seekbar2_val);
+            }
+        });
+    }
+
+    private void updateButton (boolean waveform){
+        if (waveform){
+            sinButton.setTypeface(null, Typeface.BOLD_ITALIC);
+            sinButton.setBackgroundColor(Color.parseColor("#EAAA00"));
+            chirpButton.setTypeface(null, Typeface.NORMAL);
+            chirpButton.setBackgroundColor(Color.parseColor("#F5D580"));
+        }
+        else {
+            sinButton.setTypeface(null, Typeface.NORMAL);
+            sinButton.setBackgroundColor(Color.parseColor("#F5D580"));
+            chirpButton.setTypeface(null, Typeface.BOLD_ITALIC);
+            chirpButton.setBackgroundColor(Color.parseColor("#EAAA00"));
+        }
     }
 
     private void playSin(int seekbar1_val, int duration_variable, int sample_rate_variable, int interval_variable, int num_pulses_variable) {
@@ -383,8 +423,7 @@ public class MainActivity extends AppCompatActivity {
             double[] y = new double[samples];
 
             for (int i = 0; i < x.length; i++) {
-                //y[i] = Math.cos(Math.PI * ((freq2-freq1)/xMax) * x[i] * x[i]);
-                y[i] = Math.cos(Math.PI * ((freq2-freq1)/xMax) * x[i] * x[i] + (2 * freq1 * x[i]));
+                y[i] = Math.cos(Math.PI * (((freq2-freq1)/xMax) * x[i] * x[i] + (2 * freq1 * x[i])));
 
                 series.appendData(new DataPoint(x[i], y[i]), true, x.length);
             }
@@ -476,20 +515,5 @@ public class MainActivity extends AppCompatActivity {
             graph.getViewport().setXAxisBoundsManual(true);
         }
         */
-    }
-
-    public void checkButton(View v) {
-        if (radioButton1.isChecked()) {
-            frequency2_seekbar.setVisibility(View.INVISIBLE);
-            frequency2_display.setVisibility(View.INVISIBLE);
-            waveform = true;
-            graphFunction(seekbar1_val, seekbar2_val);
-        }
-        else if (radioButton2.isChecked()) {
-            frequency2_seekbar.setVisibility(View.VISIBLE);
-            frequency2_display.setVisibility(View.VISIBLE);
-            waveform = false;
-            graphFunction(seekbar1_val, seekbar2_val);
-        }
     }
 }

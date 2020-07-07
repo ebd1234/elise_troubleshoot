@@ -4,6 +4,8 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
@@ -167,7 +169,9 @@ public class GalleryFragment extends Fragment {
 
         emitButton = (Button) root.findViewById(R.id.emitButton);
         sinButton = (Button) root.findViewById(R.id.sin_button);
+        sinButton.setTypeface(null, Typeface.BOLD_ITALIC);
         chirpButton = (Button) root.findViewById(R.id.chirp_button);
+        chirpButton.setTypeface(null, Typeface.NORMAL);
 
         frequency1_seekbar = (SeekBar) root.findViewById(R.id.frequency1_seekbar);
         frequency1_display = (TextView) root.findViewById(R.id.frequency1_display);
@@ -239,6 +243,7 @@ public class GalleryFragment extends Fragment {
                 frequency2_seekbar.setVisibility(View.INVISIBLE);
                 frequency2_display.setVisibility(View.INVISIBLE);
                 waveform = true;
+                updateButton(waveform);
                 graphFunction(seekbar1_val, seekbar2_val);
             }
         });
@@ -249,6 +254,7 @@ public class GalleryFragment extends Fragment {
                 frequency2_seekbar.setVisibility(View.VISIBLE);
                 frequency2_display.setVisibility(View.VISIBLE);
                 waveform = false;
+                updateButton(waveform);
                 graphFunction(seekbar1_val, seekbar2_val);
             }
         });
@@ -468,85 +474,103 @@ public class GalleryFragment extends Fragment {
     }
 
     private void graphFunction(int frequency_1, int frequency_2){
-        final int freq1 = frequency_1;
-        final int freq2 = frequency_2;
+
+        GraphView graph = (GraphView) graphId;
+        graph.removeAllSeries();
+
+        series = new LineGraphSeries<DataPoint>();
+
         final double sampleRate;
-        if(inputSampleRate.getText().toString().matches(""))
-        {
-            sampleRate = 44000.0;
-        }else {
+        if (inputSampleRate.getText().toString().matches("")) {
+            sampleRate = 96000.0;
+        }
+        else {
             sampleRate = Double.parseDouble(inputSampleRate.getText().toString());
         }
 
+        final double duration;
+        if (inputSampleRate.getText().toString().matches("")) {
+            duration = 5;
+        }
+        else {
+            duration = Integer.parseInt(inputDuration.getText().toString());
+        }
+
+        final int freq1 = frequency_1;
+        final int freq2 = frequency_2;
+
+        final double xMax;
+        final double step;
+
         if (waveform) {
-            double y,x;
-            x = 0;
-            double xMax= 1.0/freq1;
+            xMax = 1.0/freq1;
+            step = 1.0/sampleRate;
 
-            double inc = 1/sampleRate;
-            int samples = (int) (5.0/inc);
+            int samples = (int) Math.ceil(xMax/step);
 
-            GraphView graph = (GraphView) graphId;
-            graph.removeAllSeries();
+            double[] x = getArray(xMax, step);
+            double[] y = new double[samples];
 
-            series = new LineGraphSeries<DataPoint>();
+            for (int i = 0; i < x.length; i++) {
+                y[i] = Math.sin(2 * Math.PI * freq1 * x[i]);
 
-            for (int i = 0; i < samples; i++){
-                x = x + inc;
-                y = Math.sin(2 * Math.PI * i / (sampleRate/freq1));
-                series.appendData(new DataPoint(x, y), true, samples);
+                series.appendData(new DataPoint(x[i], y[i]), true, x.length);
             }
-
-            graph.addSeries(series);
-
-            graph.getViewport().setMaxX(xMax);
-            graph.getViewport().setMinX(0);
-            graph.getViewport().setMinY(-1);
-            graph.getViewport().setMaxY(1);
-
-            graph.getViewport().setYAxisBoundsManual(true);
-            graph.getViewport().setXAxisBoundsManual(true);
-
         }
 
         else {
-            double instfreq=0, numerator;
-            double y,x;
-            x = 0;
-            double inc = .1;
-            int samples = 2000;
+            xMax = duration/1000.0;
+            step = 1.0/sampleRate;
 
-            GraphView graph = (GraphView) graphId;
-            graph.removeAllSeries();
+            int samples = (int) Math.ceil(xMax/step);
 
-            series = new LineGraphSeries<DataPoint>();
-            for (int i = 0; i < samples; i++){
-                x = x + inc;
+            double[] x = getArray(xMax, step);
+            double[] y = new double[samples];
 
-                numerator=(double)(i)/sampleRate;
-                instfreq =freq1+(numerator*(freq2-freq1));
-                y=Math.sin(2*Math.PI*i/(sampleRate/instfreq));
+            for (int i = 0; i < x.length; i++) {
+                y[i] = Math.cos(Math.PI * (((freq2-freq1)/xMax) * x[i] * x[i] + (2 * freq1 * x[i])));
 
-                series.appendData(new DataPoint(x, y), true, samples);
+                series.appendData(new DataPoint(x[i], y[i]), true, x.length);
             }
-            graph.addSeries(series);
+        }
 
-            if (freq1 < 3000){
-                graph.getViewport().setMaxX(100);
-            }
-            else if (freq1 < 10000) {
-                graph.getViewport().setMaxX(50);
-            }
-            else {
-                graph.getViewport().setMaxX(35);
-            }
+        graph.addSeries(series);
 
-            graph.getViewport().setMinX(0);
-            graph.getViewport().setMinY(-1);
-            graph.getViewport().setMaxY(1);
+        graph.getViewport().setMaxX(xMax);
+        graph.getViewport().setMinX(0);
+        graph.getViewport().setMinY(-1);
+        graph.getViewport().setMaxY(1);
 
-            graph.getViewport().setYAxisBoundsManual(true);
-            graph.getViewport().setXAxisBoundsManual(true);
+        graph.getViewport().setYAxisBoundsManual(true);
+        graph.getViewport().setXAxisBoundsManual(true);
+    }
+
+    public double[] getArray (double stop, double step)
+    {
+        int samples = (int) Math.ceil(stop/step);
+        double[] result = new double[samples];
+        double val = 0.0;
+
+        for(int i=0;i<samples;i++) {
+            result[i] = val;
+            val = val + step;
+        }
+
+        return result;
+    }
+
+    private void updateButton (boolean waveform){
+        if (waveform){
+            sinButton.setTypeface(null, Typeface.BOLD_ITALIC);
+            sinButton.setBackgroundColor(Color.parseColor("#EAAA00"));
+            chirpButton.setTypeface(null, Typeface.NORMAL);
+            chirpButton.setBackgroundColor(Color.parseColor("#F5D580"));
+        }
+        else {
+            sinButton.setTypeface(null, Typeface.NORMAL);
+            sinButton.setBackgroundColor(Color.parseColor("#F5D580"));
+            chirpButton.setTypeface(null, Typeface.BOLD_ITALIC);
+            chirpButton.setBackgroundColor(Color.parseColor("#EAAA00"));
         }
     }
 }

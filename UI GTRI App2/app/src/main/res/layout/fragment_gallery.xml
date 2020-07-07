@@ -56,20 +56,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/frequency1_seekbar" />
 
-
-    <Button
-        android:id="@+id/emitButton"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:layout_below="@+id/text_view_selected"
-        android:layout_centerHorizontal="true"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginTop="16dp"
-        android:text="emit"
-        app:layout_constraintStart_toEndOf="@+id/pulses_input"
-        app:layout_constraintTop_toBottomOf="@+id/chirp_button" />
-
     <EditText
         android:id="@+id/duration_input"
         android:layout_width="0dp"
@@ -157,7 +143,9 @@
         android:layout_height="40dp"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
+        android:background="#EAAA00"
         android:text="sin"
+        android:textStyle="bold|italic"
         app:layout_constraintStart_toEndOf="@+id/duration_input"
         app:layout_constraintTop_toBottomOf="@+id/textView" />
 
@@ -167,8 +155,24 @@
         android:layout_height="40dp"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
+        android:background="#F5D580"
         android:text="chirp"
         app:layout_constraintStart_toEndOf="@+id/duration_input"
         app:layout_constraintTop_toBottomOf="@+id/sin_button" />
+
+    <Button
+        android:id="@+id/emitButton"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_below="@+id/text_view_selected"
+        android:layout_centerHorizontal="true"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="16dp"
+        android:background="#003057"
+        android:text="emit"
+        android:textColor="#FFFFFF"
+        app:layout_constraintStart_toEndOf="@+id/pulses_input"
+        app:layout_constraintTop_toBottomOf="@+id/chirp_button" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

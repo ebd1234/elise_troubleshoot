@@ -59,44 +59,43 @@
         app:layout_constraintTop_toBottomOf="@+id/frequency1_seekbar" />
 
 
-    <RadioGroup
-        android:id="@+id/radioGroup"
-        android:layout_width="94dp"
-        android:layout_height="63dp"
-        android:layout_centerInParent="true"
+    <Button
+        android:id="@+id/sin_button"
+        android:layout_width="80dp"
+        android:layout_height="40dp"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
-        app:layout_constraintStart_toEndOf="@+id/sample_rate_input"
-        app:layout_constraintTop_toBottomOf="@+id/textView">
+        android:background="#EAAA00"
+        android:text="sin"
+        android:textStyle="bold|italic"
+        app:layout_constraintStart_toEndOf="@+id/duration_input"
+        app:layout_constraintTop_toBottomOf="@+id/textView" />
 
-        <RadioButton
-            android:id="@+id/radio_one"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="true"
-            android:onClick="checkButton"
-            android:text="Sinusoid" />
-
-        <RadioButton
-            android:id="@+id/radio_two"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="checkButton"
-            android:text="Chirp" />
-    </RadioGroup>
+    <Button
+        android:id="@+id/chirp_button"
+        android:layout_width="80dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:background="#F5D580"
+        android:text="chirp"
+        app:layout_constraintStart_toEndOf="@+id/duration_input"
+        app:layout_constraintTop_toBottomOf="@+id/sin_button" />
 
     <Button
         android:id="@+id/emitButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
         android:layout_below="@+id/text_view_selected"
         android:layout_centerHorizontal="true"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="16dp"
+        android:background="#003057"
         android:text="emit"
-        app:layout_constraintStart_toEndOf="@+id/duration_input"
-        app:layout_constraintTop_toBottomOf="@+id/radioGroup" />
+        android:textColor="#FFFFFF"
+        app:layout_constraintStart_toEndOf="@+id/pulses_input"
+        app:layout_constraintTop_toBottomOf="@+id/chirp_button" />
 
     <EditText
         android:id="@+id/duration_input"
